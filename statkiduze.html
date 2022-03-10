@@ -1,0 +1,586 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Statki</title>
+    <meta charset="UTF-8"/>
+	<meta name="author" content="Space Cowboy"/>
+    <style>
+        #main {
+            position: relative;
+            width:100vh;
+            height: 100vh;
+        }
+        #statki{
+            position: relative;
+            width: 150px;
+            height: 600px;
+            cursor: pointer;
+        }
+        #polegry {
+            position: relative;
+            left: 200px;
+            top: -600px;
+            width: 320px;
+            height: 320px;
+            cursor: pointer;
+        }
+        #komp {
+            position: relative;
+            top: -920px;
+            left: 600px;
+            width: 320px;
+            height: 320px;
+            cursor: pointer;
+        }
+        .2{
+            height: 30px;
+            width: 30px;
+            border: 1px black solid;
+            float: left;
+            display: block;
+            background: orange;
+        }
+    </style>
+</head>
+<body>
+    <div id="main" oncontextmenu="event.preventDefault();">
+        <div id="statki">
+        </div>
+        <div id="polegry">
+        </div>
+        <div id="komp">
+        </div>
+    </div>
+    <script>
+        var postawiony = false
+        var polegry = []
+        for (var q=0; q<12;q++){
+            polegry[q]=[];
+            for(var j=0;j<12;j++){
+                polegry[q][j]=0;
+            }
+        }
+        for (var q=0; q<10;q++){
+            for(var j=0;j<10;j++){
+                polegry[q][j]=0;
+                var t = document.createElement("DIV");
+                t.setAttribute("id", q+""+j);
+                t.setAttribute("class","0")
+                t.setAttribute("style","height: 30px; width: 30px; border: 1px black solid; float: left; display: block;")
+                t.setAttribute("onmouseout","odjechanieplanszy(this)")
+				t.setAttribute("onmouseover","najechanieplanszy(this)")
+                t.setAttribute("onclick","klikniecie(this)")
+				t.setAttribute("oncontextmenu","opionowa(this)")
+                document.getElementById("polegry").appendChild(t)
+            }
+        }
+        var ile = 1
+        var maszty = 4
+        var kier = 0 //0- pozioma, 1- pionowa, kierunek
+        while(ile<5){
+            for(var q=0;q<ile;q++){
+                var t = document.createElement("DIV");
+                t.setAttribute("style","height: 34px; width:"+(32*maszty)+"px; position:relative; margin-bottom:10px;")
+                t.setAttribute("id", "s"+maszty+"_"+q)
+                t.setAttribute("class", "3");
+                t.setAttribute("title", maszty+"")
+                t.setAttribute("onmouseover","podswietl(this)")
+                t.setAttribute("onmouseout","wybielanie(this)")
+                t.setAttribute("onclick","klikstatku(this)")
+                document.getElementById("statki").appendChild(t)
+                for(var j=0; j<maszty; j++){ //nadawanie fizyczności
+                    var y = document.createElement("DIV");
+                    y.setAttribute("style","height:30px; width:30px; border:1px black solid; position:absolute; left:"+j*32+"px")
+                    y.setAttribute("id", "s"+maszty+""+q+""+j)
+                    document.getElementById("s"+maszty+"_"+q).appendChild(y)
+                }
+            }
+            ile++
+            maszty--
+        }
+        function wybielanie(t){
+            var mao = t.getAttribute("class")
+            if(mao==3){
+                var china = t.children
+                for(var q=0;q<china.length;q++){
+                    china[q].style.background="white"
+                }
+            }   
+        }
+		function podswietl(t){
+            var india = t.children
+            for(var q=0;q<india.length;q++){
+                india[q].style.background="blue"
+            }
+        }
+        function klikstatku(t){
+            var dzieci = document.getElementById("statki").children
+            for(q=0;q<dzieci.length;q++){
+                dzieci[q].setAttribute("class","3")
+                var oddzieci = dzieci[q].children
+                for(j=0;j<oddzieci.length;j++){
+                    oddzieci[j].style.background="white"
+                }
+            }
+            var niebieskosc = t.children
+            t.setAttribute("class","1")
+            for(q=0;q<niebieskosc.length;q++){
+                niebieskosc[q].style.background="blue"
+            }
+            postawiony=false //czy jest wybrany statek (chodzi o podświetlenie)
+        }
+		function najechanieplanszy(t){
+            var kocyk = t
+            var piatak = document.getElementsByClassName("1")
+            if(postawiony==false){
+                if(kier == 0){
+                    if(piatak[0] != null){
+                        kolpoziom(kocyk, piatak, postawiony)
+                    }
+                }
+                else if(kier == 1){
+                    if(piatak[0] != null){
+                        kolorkipionowe(kocyk, piatak, postawiony)
+                    }
+                }
+            }
+        }
+        function kolpoziom(t, piatak, postawiony){
+            var taczka = piatak[0].getAttribute("title")
+            var widly = t.id
+            console.log(widly)
+            var kekp = widly.substr(0,1) //chyba zaczynasz od zerowego elementu i pobierasz tylko jeden element zerowy (chyba)
+            var kekq = widly.substr(1,1)
+            kekp = parseInt(kekp) //zamieniasz na liczbę ze stringa
+            kekq = parseInt(kekq)
+            taczka = parseInt(taczka)
+            if(kekq<10-taczka){ //jeżeli trzymamy się na planszy (wielkość planszy minus długość statku)
+                if(polegry[kekq+1][kekp+1]==0 && polegry[kekq+taczka][kekp+1]==0){
+                    for(q=0;q<taczka;q++){ 
+                        document.getElementById(kekp+""+kekq).style.background="green"
+                        kekq++
+                    }
+                }
+                else{
+                    for(q=0;q<taczka;q++){
+                        document.getElementById(kekp+""+kekq).style.background="red"
+                        kekq++
+                    }
+                }
+            }
+            else{ //nie wyjeżdżanie za plansze przy podświetlaniu statku
+                kekq = 10-taczka 
+                if(polegry[kekq+1][kekp+1]==0 && polegry[kekq+taczka][kekp+1]==0){
+                    for(q=0;q<taczka;q++){
+                        document.getElementById(kekp+""+kekq).style.background="green"
+                        kekq++
+                    }
+                }
+                else{
+                    for(q=0;q<taczka;q++){
+                        document.getElementById(kekp+""+kekq).style.background="red"
+                        kekq++
+                    }
+                }
+            }
+        }
+        function kolorkipionowe(t, piatak, postawiony){
+            var taczka = piatak[0].getAttribute("title")
+            var widly = t.id
+            console.log(widly)
+            var kekp = widly.substr(0,1)
+            var kekq = widly.substr(1,1)
+            kekp = parseInt(kekp)
+            kekq = parseInt(kekq)
+            taczka = parseInt(taczka)
+            if(kekp<10-taczka){
+                if(polegry[kekq+1][kekp+1]==0 && polegry[kekq+1][kekp+taczka]==0){
+                    for(q=0;q<taczka;q++){
+                        document.getElementById(kekp+""+kekq).style.background="green"
+                        kekp++
+                    }
+                }
+                else{
+                    for(q=0;q<taczka;q++){
+                        document.getElementById(kekp+""+kekq).style.background="red"
+                        kekp++
+                    }
+                }
+            }
+            else{
+                kekp = 10-taczka
+                if(polegry[kekq+1][kekp+1]==0 && polegry[kekq+1][kekp+taczka]==0){
+                    for(q=0;q<taczka;q++){ 
+                        document.getElementById(kekp+""+kekq).style.background="green"
+                        kekp++
+                    }
+                }
+                else{
+                    for(q=0;q<taczka;q++){ 
+                        document.getElementById(kekp+""+kekq).style.background="red"
+                        kekp++
+                    }
+                }
+            }
+        }
+		function klikstatku(t){
+            var dzieci = document.getElementById("statki").children
+            for(q=0;q<dzieci.length;q++){
+                dzieci[q].setAttribute("class","3")
+                var oddzieci = dzieci[q].children
+                for(j=0;j<oddzieci.length;j++){
+                    oddzieci[j].style.background="white"
+                }
+            }
+            var niebieskosc = t.children
+            t.setAttribute("class","1")
+            for(q=0;q<niebieskosc.length;q++){
+                niebieskosc[q].style.background="blue"
+            }
+            postawiony=false //czy jest wybrany statek (chodzi o podświetlenie)
+        }
+        function opionowa(t){
+            var plakat = t
+            if(kier == 0){
+                kier=1  
+            }
+            else{
+                kier=0
+            }
+            odjechanieplanszy(plakat)
+            najechanieplanszy(plakat) //odświerzenie planszy
+        }
+        function odjechanieplanszy(t){
+            if(postawiony==false){
+                for(var q=1, k=0; q<11; q++,k++){
+                    for(var j=1, l=0; j<11; j++,l++){
+                        var nwm = document.getElementById(l+""+k)
+                        if(polegry[q][j]==0 || polegry[q][j]==1){
+                            nwm.style.background="white"  
+                        }
+                        else if (polegry[q][j]==2){
+                            nwm.style.background="orange"
+                        }
+                    }
+                }
+            }
+        }
+        function klikniecie(t){
+            console.log("klik")
+            var piatak = document.getElementsByClassName("1")
+            var kredka = piatak[0].getAttribute("id")
+            kredka = kredka[3]
+            var taczka = piatak[0].getAttribute("title")
+            var widly = t.id
+            console.log(widly)
+            var kekp = widly.substr(0,1)
+            var kekq = widly.substr(1,1)
+            kekq = parseInt(kekq)
+            kekp = parseInt(kekp)
+            var ciasto = document.getElementById(kekp+""+kekq)
+            if(ciasto.style.background=="green"){
+                if(kier == 0){ //dla poziomej orientacji
+                    if(kekq<10-taczka){
+                        for(q=0;q<taczka;q++){
+                            document.getElementById(kekp+""+kekq).style.background="orange"
+                            document.getElementById(kekp+""+kekq).setAttribute("class", "2")
+                            for(var pion=-1;pion<2;pion++){
+                                for(var poziom=-1;poziom<2;poziom++){
+                                    if(polegry[kekq+pion+1][kekp+poziom+1]!=2){
+                                        polegry[kekq+pion+1][kekp+poziom+1]=1
+                                    } //wszystkie kwadraciki dookoła to jedynki, nie można tam stawiać statku
+                                }
+                            }
+                            polegry[kekq+1][kekp+1]=2
+                            kekq++
+                        }
+                    }
+                    else{
+                        kekq = 10-taczka //po 6-tym elemencie
+                        for(q=0;q<taczka;q++){
+                            document.getElementById(kekp+""+kekq).style.background="orange"
+                            document.getElementById(kekp+""+kekq).setAttribute("class", "2")
+                            for(var pion=-1;pion<2;pion++){
+                                for(var poziom=-1;poziom<2;poziom++){
+                                    if(polegry[kekq+pion+1][kekp+poziom+1]!=2){
+                                        polegry[kekq+pion+1][kekp+poziom+1]=1
+                                    }
+                                }
+                            }
+                            polegry[kekq+1][kekp+1]=2
+                            kekq++
+                        }
+                    }
+                    var stawianiestatku = document.getElementById("s"+taczka+"_"+kredka)
+                    console.log("stawianiestatku"+stawianiestatku)
+                    stawianiestatku.parentNode.removeChild(stawianiestatku) //usuwanie wstawionego statku
+                }
+                else{ //dla pionowej orientacji
+                    if(kekp<10-taczka){
+                        for(q=0;q<taczka;q++){
+                            document.getElementById(kekp+""+kekq).style.background="orange"
+                            document.getElementById(kekp+""+kekq).setAttribute("class", "2")
+                            for(var pion=-1;pion<2;pion++){
+                                for(var poziom=-1;poziom<2;poziom++){
+                                    if(polegry[kekq+pion+1][kekp+poziom+1]!=2){
+                                        polegry[kekq+pion+1][kekp+poziom+1]=1
+                                    }
+                                }
+                            }
+                            polegry[kekq+1][kekp+1]=2
+                            kekp++
+                        }
+                    }
+                    else{
+                        kekp = 10-taczka
+                        for(q=0;q<taczka;q++){
+                            document.getElementById(kekp+""+kekq).style.background="orange"
+                            document.getElementById(kekp+""+kekq).setAttribute("class", "2")
+                            for(var pion=-1;pion<2;pion++){
+                                for(var poziom=-1;poziom<2;poziom++){
+                                    if(polegry[kekq+pion+1][kekp+poziom+1]!=2){
+                                        polegry[kekq+pion+1][kekp+poziom+1]=1
+                                    }
+                                }
+                            }
+                            polegry[kekq+1][kekp+1]=2
+                            kekp++
+                        }
+                    }
+                    var stawianiestatku = document.getElementById("s"+taczka+"_"+kredka)
+                    console.log("stawianiestatku"+stawianiestatku)
+                    stawianiestatku.parentNode.removeChild(stawianiestatku) //usuwanie statku w pionie
+                }
+            postawiony=true //postawiłeś statek
+            }
+            var licznik = document.getElementById("statki").children
+            if(licznik.length==0){
+                gierka() //jeżeli skończyły się statki po lewej to zaczynasz gierkę
+            }
+        }
+		function odjechanieplanszy(t){
+            if(postawiony==false){
+                for(var q=1, k=0; q<11; q++,k++){
+                    for(var j=1, l=0; j<11; j++,l++){
+                        var nwm = document.getElementById(l+""+k)
+                        if(polegry[q][j]==0 || polegry[q][j]==1){
+                            nwm.style.background="white"  
+                        }
+                        else if (polegry[q][j]==2){
+                            nwm.style.background="orange"
+                        }
+                    }
+                }
+            }
+        }
+        function losowo(wielkosc, komp){
+            var losi = Math.round(Math.random() * (10-wielkosc))+1 //współżędna x
+            var losj = Math.round(Math.random() * (10-wielkosc))+1 //współżedna y
+            var orientacja = Math.round(Math.random()) //0- pozioma 1- pionowa
+            var taken = false //jeżeli pole jest zajęte
+            if (orientacja == 0){
+                for(var j=-1;j<=masztykomputera;j++){ //sprawdza czy to miejsce w tablicy komputera jest wolne
+                    for(var q=-1;q<2;q++){
+                        if(komp[losi+q][losj+j] != 0){
+                            taken = true
+                            break
+                        }
+                        else if(komp[losi+q][losj+j] == 0){
+                            taken = false
+                        }
+                    }
+                    if(taken == true){
+                        break
+                    }
+                }
+                if(taken == true){
+                    losowo(masztykomputera, komp)
+                }
+                else if(taken == false){  //postawienie statku przez omputer
+                    for(var k=0;k<masztykomputera;k++){
+                        komp[losi][losj+k] = 1
+                    }
+                }
+            }
+            else if(orientacja == 1){
+                for(var q=-1;q<=masztykomputera;q++){
+                    for(var j=-1;j<2;j++){
+                        if(komp[losi+q][losj+j] != 0){
+                            taken = true
+                            break
+                        }
+                        else if(komp[losi+q][losj+j] == 0){
+                            taken = false
+                        }
+                    }
+                    if(taken == true){
+                        break
+                    }
+                }
+                if(taken == true){
+                    losowo(masztykomputera, komp)
+                }
+                else if(taken == false){  
+                    for(var k=0;k<masztykomputera;k++){
+                        komp[losi+k][losj] = 1
+                    }
+                }
+            }
+        }
+        var komp = [] //tworzenie tablicy komp
+        for (q=0; q<12;q++){
+            komp[q]=[];
+            for(j=0;j<12;j++){
+                komp[q][j]=0;
+            }
+        }
+        for (q=0; q<10;q++){ //wizualne divy
+            for(j=0;j<10;j++){
+                komp[q+1][j+1]=0;
+                var t = document.createElement("DIV");
+                t.setAttribute("class", "0");
+                t.setAttribute("id", q+""+j+"k");
+                t.setAttribute("style","height: 30px; width: 30px; border: 1px black solid; float: left; display: block;")
+                document.getElementById("komp").appendChild(t)
+            }
+        }
+        var ilekomputera = 1
+        var masztykomputera = 4
+        while(ilekomputera<5){
+            for(var q=0;q<ilekomputera;q++){
+                losowo(masztykomputera,komp) //sprawdzenie warunku czy ilosc < 5
+            }
+            masztykomputera--
+            ilekomputera++
+        }
+        for (q=0; q<10;q++){
+            for(j=0;j<10;j++){
+                if(komp[q+1][j+1] == 1){
+                    document.getElementById(q+""+j+"k").setAttribute("style","height: 30px; width: 30px; border: 1px black solid; float: left; display: block;");   
+                }
+            }
+        }
+        function gierka(){ //rozpoczecie gry
+            var alercik = document.createElement("DIV");
+            alercik.setAttribute("style","position: absolute; left: 450px; top:350px; width: 200px; border: 2px green solid; display: block; border-radius:30px; cursor:pointer;font-size=28px;font-family: Arial;text-align:center;padding:5px;")
+            alercik.innerHTML="ROZPOCZNIJ GRĘ"
+            alercik.setAttribute("id","alercik")
+            alercik.setAttribute("onclick","gierkowanie(this)")
+            document.getElementById("main").appendChild(alercik)
+        }
+        var trafieniegracza = 0 //ilosci trafien gracza
+        var trafieniekomputera = 0 //komputera, jeśli któaś z nich == 20, gra się kończy
+        var mozna = true //prawdziwe wywołanie funkcji gry po komunikacie
+        function gierkowanie(alercik){
+            var t = setTimeout("gra()", 1000)
+            if(mozna==true){
+                var t = document.getElementById("alercik")
+                document.getElementById("main").removeChild(t)
+                mozna=false
+            }
+        }
+        var ruchgracza = true //true- ruch gracza, false- komputera
+        var shotcomputer = [] //tworzenie tablicy ze strzałami komputera
+        for(q=0; q<10;q++){
+            shotcomputer[q]=[]
+            for(j=0;j<10;j++){
+                shotcomputer[q][j]=0
+            }
+        }
+        var shotplayer = [] //tablica ze strzałami gracza
+        for(q=0; q<10;q++){
+            shotplayer[q]=[]
+            for(j=0;j<10;j++){
+                shotplayer[q][j]=0
+            }
+        }
+        var bylo = false //to miejsce w które kliknąłeś już było kliknięte
+        function strzal(t){
+            var strzelanie = t.id
+            var kocyk = strzelanie.substr(0,1) //współrzędna x
+            var igrekowa = strzelanie.substr(1,1) //współrzędna y
+            kocyk = parseInt(kocyk) //int
+            igrekowa = parseInt(igrekowa) //robienie int ze stringa
+            if(shotplayer[igrekowa][kocyk]==0){ //sprawdzenie czy tam już strzelałem
+                if(komp[kocyk+1][igrekowa+1]==1){ //jeżeli jest tam statek
+                    shotplayer[igrekowa][kocyk]=1
+                    var obrazek = document.createElement("IMG")
+                    obrazek.setAttribute("style","width:30px;height:30px;")
+                    obrazek.src = "images/krzyzyk.png"
+                    console.log(t.id)
+                    t.appendChild(obrazek)
+                    ruchgracza=true
+                    trafieniegracza++
+                }
+                else{ //jeżeli nie trafiłeś
+                    var obrazek = document.createElement("IMG")
+                    obrazek.setAttribute("style","width:16px;height:16px;margin-left:7px;margin-top:7px;")
+                    obrazek.src = "images/kropa.png"
+                    console.log(t.id)
+                    t.appendChild(obrazek)
+                    ruchgracza=false
+                }
+                gierkowanie()
+            }
+            else{
+                gierkowanie()
+            }
+        }
+		function gra(){
+            if(trafieniegracza==20){ //wygrywa gracz
+                playerwin()
+            }
+            else if(trafieniekomputera==20){ //wygrywa komputer
+                computerwin()
+            }
+            if(ruchgracza==true){ //jeżeli jest ruch gracza
+                alert("Ruch gracza")
+                for(q=0; q<10;q++){
+                    for(j=0;j<10;j++){
+                        var t = document.getElementById(q+""+j+"k")
+                        t.setAttribute("onclick","strzal(this)")
+                    }
+                }
+            }
+            else{
+                alert("Ruch komputera")
+                var kompq = Math.floor(Math.random() * (10)) //losowa liczba x'owa
+                var kompp = Math.floor(Math.random() * (10)) //losowa liczba y'owa
+                while(shotcomputer[kompq][kompp]==1){ //dopóki nie trafi w wolne miejsce
+                    var kompq = Math.floor(Math.random() * (10))
+                    var kompp = Math.floor(Math.random() * (10))
+                }
+                shotcomputer[kompq][kompp]=1 //w tym miejscu strzeliłem
+                var t = document.getElementById(kompp+""+kompq) //pobranie info o div'ie strzelonym
+                if(polegry[kompq+1][kompp+1]==2){ //jeżeli na tym miejscu jest statek
+                    var obrazek = document.createElement("IMG")
+                    obrazek.setAttribute("style","width:30px;height:30px;")
+                    obrazek.src = "images/krzyzyk.png"
+                    console.log(t.id)
+                    t.appendChild(obrazek)
+                    ruchgracza=false
+                    trafieniekomputera++
+                    gierkowanie()
+                }
+                else{
+                    var obrazek = document.createElement("IMG")
+                    obrazek.setAttribute("style","width:16px;height:16px;margin-left:7px;margin-top:7px;")
+                    obrazek.src = "images/kropa.png"
+                    console.log(t.id)
+                    t.appendChild(obrazek)
+                    ruchgracza=true
+                    gierkowanie()
+                }
+            }
+        }
+        function playerwin(){
+            console.log("WYGRYWASZ")
+            alert("WYGRYWASZ")
+        }
+        function computerwin(){
+            console.log("KOMPUTER WYGRYWA")
+            alert("KOMPUTER WYGRYWA")
+        }
+    </script>
+</body>
+</html>
